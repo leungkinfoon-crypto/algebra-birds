@@ -17,19 +17,556 @@
         .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
         header { text-align: center; color: #2c3e50; margin-bottom: 20px; }
         header h1 { font-size: 2.2em; }
-        .card { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 6px 20px rgba(0,0,0,0.12); margin-bottom: 20px; }
-        #game-canvas { display: block; margin: 0 auto; border: 4px solid #27ae60; border-radius: 15px; max-width: 100%; touch-action: none; }
-        button { background: #e74c3c; color: white; border: none; padding: 14px 32px; border-radius: 30px; font-size: 1.15em; cursor: pointer; margin: 8px; }
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+            margin-bottom: 20px;
+        }
+        .form-group { margin: 15px 0; text-align: center; }
+        label { font-weight: bold; display: block; margin-bottom: 8px; font-size: 1.1em; }
+        select, input {
+            padding: 12px 18px;
+            font-size: 1.1em;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            width: 200px;
+            max-width: 90%;
+        }
+        button {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.15em;
+            border-radius: 30px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 8px;
+            transition: background 0.2s;
+        }
+        button:hover { background: #c0392b; }
+        button.secondary { background: #3498db; }
+        button.secondary:hover { background: #2980b9; }
+        .leaderboard { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        .leaderboard th, .leaderboard td { padding: 10px; text-align: center; border-bottom: 1px solid #eee; }
+        .leaderboard th { background: #f8f9fa; }
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            background: rgba(255,255,255,0.95);
+            padding: 12px 20px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            font-weight: bold;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .question-box {
+            background: white;
+            border: 3px solid #e74c3c;
+            border-radius: 15px;
+            padding: 16px;
+            font-size: 1.25em;
+            text-align: center;
+            margin-bottom: 12px;
+            min-height: 65px;
+        }
+        #game-canvas {
+            display: block;
+            margin: 0 auto;
+            background: linear-gradient(#87CEEB, #98FB98);
+            border: 4px solid #27ae60;
+            border-radius: 15px;
+            cursor: crosshair;
+            max-width: 100%;
+            height: auto;
+            touch-action: none;
+        }
+        @media (max-width: 768px) {
+            .container { padding: 10px; }
+            header h1 { font-size: 1.6em; }
+            .question-box { font-size: 1.05em; padding: 12px; }
+            .info-bar { font-size: 0.9em; padding: 8px 12px; }
+            button { padding: 12px 20px; font-size: 1em; }
+        }
+        .feedback { text-align: center; font-size: 1.3em; font-weight: bold; min-height: 36px; margin: 8px 0; }
+        .feedback.success { color: #27ae60; }
+        .feedback.error { color: #e74c3c; }
+        .analysis { text-align: left; background: #f8f9fa; padding: 20px; border-radius: 12px; margin: 15px 0; }
+        .example { background: white; padding: 12px; margin: 8px 0; border-left: 4px solid #3498db; border-radius: 6px; }
+        .stars { font-size: 3em; text-align: center; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🐦 代數小鳥</h1>
-            <p>第15課　文字敘述轉代數式</p>
-        </header>
-        <p style="text-align:center; color:#e74c3c; font-weight:bold;">完整版已更新！請重新整理頁面。</p>
-        <p style="text-align:center;">如果未見完整遊戲，請告訴我再更新一次。</p>
+    <!-- 首頁 -->
+    <div id="home-screen" class="screen active">
+        <div class="container">
+            <header>
+                <h1>🐦 代數小鳥</h1>
+                <p>第15課　文字敘述轉代數式</p>
+            </header>
+            <div class="card">
+                <div class="form-group">
+                    <label>班別</label>
+                    <select id="class-select">
+                        <option>5A</option><option>5B</option><option>5C</option><option>5D</option><option>5E</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>學號 (1-40)</label>
+                    <input type="number" id="student-no" min="1" max="40" value="1">
+                </div>
+                <div style="text-align:center;">
+                    <button onclick="startGame()">開始遊戲</button>
+                    <button class="secondary" onclick="showLeaderboard()">查看排行榜</button>
+                </div>
+            </div>
+            <div class="card" id="leaderboard-card" style="display:none;">
+                <h2 style="text-align:center;">🏆 排行榜</h2>
+                <table class="leaderboard" id="leaderboard-table">
+                    <thead><tr><th>名次</th><th>班別</th><th>學號</th><th>得分</th><th>用時</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
     </div>
+
+    <!-- 遊戲畫面 -->
+    <div id="game-screen" class="screen">
+        <div class="container">
+            <div class="info-bar">
+                <span>班別學號：<span id="player-info"></span></span>
+                <span>關卡：<span id="level">1</span> / 8</span>
+                <span>得分：<span id="score">0</span></span>
+                <span>生命：<span id="birds-left">5</span></span>
+                <span>用時：<span id="timer">0</span>秒</span>
+            </div>
+            <div class="question-box" id="question"></div>
+            <canvas id="game-canvas" width="900" height="400"></canvas>
+            <div class="feedback" id="feedback"></div>
+            <div style="text-align:center;">
+                <button id="next-btn" onclick="nextLevel()" style="display:none;">下一關</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 結果畫面 -->
+    <div id="end-screen" class="screen">
+        <div class="container">
+            <div class="card">
+                <h2 style="text-align:center;">遊戲完成！</h2>
+                <p style="text-align:center; font-size:1.3em; margin:10px 0;">
+                    最終得分：<strong id="final-score">0</strong>　|　用時：<strong id="final-time">0</strong>秒
+                </p>
+                <div class="analysis" id="analysis"></div>
+                <div style="text-align:center;">
+                    <button onclick="goHome()">返回首頁</button>
+                    <button class="secondary" onclick="showLeaderboardFromEnd()">查看排行榜</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 40 題題庫（每次隨機抽 8 題）
+        const allQuestions = [
+            { text: "媽媽買蘋果 y 個，買橙的數量是蘋果的 4 倍。媽媽買橙 ______ 個。", options: ["4y", "y+4", "y/4", "4+y"], correct: 0, concept: "乘法（倍）" },
+            { text: "媽媽有梨 20 個，平均分成 n 份，每份有梨 ______ 個。", options: ["20/n", "n/20", "20n", "20-n"], correct: 0, concept: "除法（平均分）" },
+            { text: "冠軍的成績是 f 秒，亞軍的成績是 35 秒。兩者相差多少秒？", options: ["35-f", "f-35", "f+35", "35/f"], correct: 0, concept: "減法（比較數量）" },
+            { text: "服裝店有項鍊 E 條，項鍊是手鏈的 3 倍。手鏈有 ______ 條。", options: ["E/3", "3E", "E+3", "3/E"], correct: 0, concept: "除法（倍的反向）" },
+            { text: "老師把 300 張手工紙平均分給 M 個學生。每人分得 ______ 張。", options: ["300/M", "M/300", "300M", "300-M"], correct: 0, concept: "除法（平均分）" },
+            { text: "詠恩有 5 元，樂桐比詠恩多 x 元。樂桐有 ______ 元。", options: ["5+x", "5-x", "x-5", "5x"], correct: 0, concept: "加法（比……多）" },
+            { text: "五甲班有男生 16 個，男生比女生多 y 個。女生有 ______ 個。", options: ["16-y", "16+y", "y-16", "16y"], correct: 0, concept: "減法（比較數量）" },
+            { text: "每天吃橙 k 個，一星期共吃 ______ 個。", options: ["7k", "k+7", "k/7", "7+k"], correct: 0, concept: "乘法（倍數）" }
+        ];
+
+        let levels = [];
+        let player = { class: "5A", no: 1 };
+        let currentLevel = 0;
+        let score = 0;
+        let birdsLeft = 5;
+        let startTime = 0;
+        let timerInterval = null;
+        let elapsed = 0;
+        let mistakes = [];
+        let isDragging = false;
+        let currentMouse = {x:0, y:0};
+        let projectile = null;
+        let pigs = [];
+        let particles = [];
+        const slingshotPos = {x: 120, y: 300};
+
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function startGame() {
+            player.class = document.getElementById('class-select').value;
+            player.no = parseInt(document.getElementById('student-no').value) || 1;
+            if (player.no < 1 || player.no > 40) player.no = 1;
+            document.getElementById('player-info').textContent = player.class + ' - ' + player.no;
+
+            const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+            levels = shuffled.slice(0, 8);
+
+            currentLevel = 0;
+            score = 0;
+            mistakes = [];
+            document.getElementById('score').textContent = 0;
+            startTime = Date.now();
+            elapsed = 0;
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(updateTimer, 1000);
+            showScreen('game-screen');
+            initLevel();
+            if (!window.gameStarted) {
+                gameLoop();
+                window.gameStarted = true;
+            }
+        }
+
+        function updateTimer() {
+            elapsed = Math.floor((Date.now() - startTime) / 1000);
+            document.getElementById('timer').textContent = elapsed;
+        }
+
+        function initLevel() {
+            const level = levels[currentLevel];
+            document.getElementById('question').textContent = level.text;
+            document.getElementById('level').textContent = currentLevel + 1;
+            birdsLeft = 5;
+            document.getElementById('birds-left').textContent = birdsLeft;
+            projectile = null;
+            particles = [];
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('next-btn').style.display = 'none';
+
+            pigs = [];
+            const startX = 480;
+            const spacing = 130;
+            level.options.forEach((opt, i) => {
+                pigs.push({
+                    x: startX + (i % 2) * spacing,
+                    y: 80 + Math.floor(i / 2) * 110,
+                    w: 110,
+                    h: 70,
+                    text: opt,
+                    isCorrect: i === level.correct,
+                    hit: false
+                });
+            });
+        }
+
+        function getCanvasPos(e) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            let clientX, clientY;
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            return {
+                x: (clientX - rect.left) * scaleX,
+                y: (clientY - rect.top) * scaleY
+            };
+        }
+
+        canvas.addEventListener('mousedown', e => {
+            if (birdsLeft <= 0) return;
+            const pos = getCanvasPos(e);
+            if (Math.hypot(pos.x - slingshotPos.x, pos.y - slingshotPos.y) < 90) {
+                isDragging = true;
+                currentMouse = pos;
+            }
+        });
+        canvas.addEventListener('mousemove', e => {
+            if (!isDragging) return;
+            currentMouse = getCanvasPos(e);
+        });
+        canvas.addEventListener('mouseup', () => { if (isDragging) { isDragging = false; launch(); } });
+
+        canvas.addEventListener('touchstart', e => {
+            e.preventDefault();
+            if (birdsLeft <= 0) return;
+            const pos = getCanvasPos(e);
+            if (Math.hypot(pos.x - slingshotPos.x, pos.y - slingshotPos.y) < 100) {
+                isDragging = true;
+                currentMouse = pos;
+            }
+        }, { passive: false });
+        canvas.addEventListener('touchmove', e => {
+            e.preventDefault();
+            if (!isDragging) return;
+            currentMouse = getCanvasPos(e);
+        }, { passive: false });
+        canvas.addEventListener('touchend', e => {
+            e.preventDefault();
+            if (isDragging) { isDragging = false; launch(); }
+        }, { passive: false });
+
+        function launch() {
+            if (birdsLeft <= 0) return;
+            const dx = slingshotPos.x - currentMouse.x;
+            const dy = slingshotPos.y - currentMouse.y;
+            const power = Math.min(Math.hypot(dx, dy) / 70, 2);
+            projectile = {
+                x: slingshotPos.x, y: slingshotPos.y,
+                vx: dx * power * 0.35, vy: dy * power * 0.35,
+                active: true
+            };
+        }
+
+        function update() {
+            if (projectile && projectile.active) {
+                projectile.vy += 0.28;
+                projectile.x += projectile.vx;
+                projectile.y += projectile.vy;
+                pigs.forEach(pig => {
+                    if (!pig.hit && projectile.x > pig.x && projectile.x < pig.x + pig.w &&
+                        projectile.y > pig.y && projectile.y < pig.y + pig.h) {
+                        pig.hit = true;
+                        if (pig.isCorrect) {
+                            createParticles(projectile.x, projectile.y);
+                            projectile.active = false;
+                            score += 150 + birdsLeft * 30;
+                            document.getElementById('score').textContent = score;
+                            showFeedback('🎉 射中正確代數式！', true);
+                            document.getElementById('next-btn').style.display = 'inline-block';
+                        } else {
+                            createParticles(projectile.x, projectile.y, true);
+                            projectile.active = false;
+                            birdsLeft--;
+                            document.getElementById('birds-left').textContent = birdsLeft;
+                            showFeedback('射中錯誤的代數式！扣一命', false);
+                            if (!mistakes.includes(levels[currentLevel].concept)) {
+                                mistakes.push(levels[currentLevel].concept);
+                            }
+                            if (birdsLeft <= 0) {
+                                showFeedback('生命用完！下一關', false);
+                                setTimeout(nextLevel, 1200);
+                            }
+                        }
+                    }
+                });
+                if (projectile.active && (projectile.x > canvas.width + 50 || projectile.y > canvas.height + 50 || projectile.x < -50)) {
+                    projectile.active = false;
+                    birdsLeft--;
+                    document.getElementById('birds-left').textContent = birdsLeft;
+                    showFeedback('射出界！扣一命', false);
+                    if (birdsLeft <= 0) {
+                        showFeedback('生命用完！下一關', false);
+                        setTimeout(nextLevel, 1200);
+                    }
+                }
+            }
+            pigs.forEach(pig => {
+                if (!pig.hit) {
+                    if (!pig.vx) {
+                        pig.vx = (Math.random() - 0.5) * 1.8;
+                        pig.vy = (Math.random() - 0.5) * 1.2;
+                    }
+                    pig.x += pig.vx;
+                    pig.y += pig.vy;
+                    if (pig.x < 400 || pig.x > canvas.width - pig.w - 20) pig.vx *= -1;
+                    if (pig.y < 40 || pig.y > 280) pig.vy *= -1;
+                }
+            });
+            particles = particles.filter(p => { p.x += p.vx; p.y += p.vy; p.vy += 0.12; p.life--; return p.life > 0; });
+        }
+
+        function createParticles(x, y, wrong = false) {
+            for (let i = 0; i < 15; i++) {
+                particles.push({
+                    x, y, vx: (Math.random()-0.5)*10, vy: (Math.random()-0.5)*10-3,
+                    life: 35, color: wrong ? '#e74c3c' : '#f1c40f'
+                });
+            }
+        }
+
+        function showFeedback(msg, success) {
+            const fb = document.getElementById('feedback');
+            fb.textContent = msg;
+            fb.className = 'feedback ' + (success ? 'success' : 'error');
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const sky = ctx.createLinearGradient(0, 0, 0, 340);
+            sky.addColorStop(0, '#87CEEB');
+            sky.addColorStop(1, '#E0F7FA');
+            ctx.fillStyle = sky;
+            ctx.fillRect(0, 0, canvas.width, 340);
+            ctx.fillStyle = '#7CFC00';
+            ctx.fillRect(0, 340, canvas.width, 60);
+            ctx.fillStyle = '#32CD32';
+            for (let i = 0; i < canvas.width; i += 20) {
+                ctx.beginPath();
+                ctx.arc(i, 350, 8, 0, Math.PI, true);
+                ctx.fill();
+            }
+            ctx.strokeStyle = '#8B4513';
+            ctx.lineWidth = 10;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(slingshotPos.x - 25, 340);
+            ctx.quadraticCurveTo(slingshotPos.x - 10, 280, slingshotPos.x, slingshotPos.y);
+            ctx.quadraticCurveTo(slingshotPos.x + 10, 280, slingshotPos.x + 25, 340);
+            ctx.stroke();
+            if (isDragging) {
+                ctx.strokeStyle = '#2c3e50';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(slingshotPos.x - 15, slingshotPos.y);
+                ctx.lineTo(currentMouse.x, currentMouse.y);
+                ctx.lineTo(slingshotPos.x + 15, slingshotPos.y);
+                ctx.stroke();
+                drawBird(currentMouse.x, currentMouse.y, 18);
+            }
+            if (projectile && projectile.active) {
+                drawBird(projectile.x, projectile.y, 18);
+            }
+            pigs.forEach(pig => {
+                const cx = pig.x + pig.w / 2;
+                const cy = pig.y + pig.h / 2;
+                const r = Math.min(pig.w, pig.h) / 2 - 4;
+                ctx.fillStyle = pig.hit ? (pig.isCorrect ? '#2ecc71' : '#bdc3c7') : '#ff6b6b';
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.strokeStyle = '#c0392b';
+                ctx.lineWidth = 4;
+                ctx.stroke();
+                ctx.fillStyle = 'white';
+                ctx.beginPath();
+                ctx.arc(cx - 12, cy - 8, 7, 0, Math.PI * 2);
+                ctx.arc(cx + 12, cy - 8, 7, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#2c3e50';
+                ctx.beginPath();
+                ctx.arc(cx - 12, cy - 8, 3, 0, Math.PI * 2);
+                ctx.arc(cx + 12, cy - 8, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillStyle = '#e74c3c';
+                ctx.beginPath();
+                ctx.ellipse(cx, cy + 6, 10, 7, 0, 0, Math.PI * 2);
+                ctx.fill();
+                drawExpression(ctx, pig.text, cx, cy + r + 22);
+            });
+            particles.forEach(p => {
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.life / 35;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            });
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = '16px sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText('拖曳彈弓，射中正確的代數式豬仔！', 15, 30);
+        }
+
+        function drawExpression(ctx, expr, x, y) {
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 18px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            if (expr.includes('/')) {
+                const parts = expr.split('/');
+                const num = parts[0].trim();
+                const den = parts[1].trim();
+                ctx.fillText(num, x, y - 12);
+                const w = Math.max(ctx.measureText(num).width, ctx.measureText(den).width) + 8;
+                ctx.beginPath();
+                ctx.moveTo(x - w/2, y);
+                ctx.lineTo(x + w/2, y);
+                ctx.strokeStyle = '#2c3e50';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.fillText(den, x, y + 12);
+            } else {
+                ctx.fillText(expr, x, y);
+            }
+        }
+
+        function drawBird(x, y, size) {
+            ctx.fillStyle = '#e74c3c';
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(x + 6, y - 4, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#2c3e50';
+            ctx.beginPath();
+            ctx.arc(x + 8, y - 4, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#f39c12';
+            ctx.beginPath();
+            ctx.moveTo(x + size - 2, y);
+            ctx.lineTo(x + size + 10, y - 4);
+            ctx.lineTo(x + size + 10, y + 4);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function gameLoop() { update(); draw(); requestAnimationFrame(gameLoop); }
+
+        function nextLevel() {
+            currentLevel++;
+            if (currentLevel >= levels.length) {
+                finishGame();
+                return;
+            }
+            initLevel();
+        }
+
+        function finishGame() {
+            if (timerInterval) clearInterval(timerInterval);
+            document.getElementById('final-score').textContent = score;
+            document.getElementById('final-time').textContent = elapsed;
+            // 簡單排行榜儲存
+            const key = 'algebra_birds_lb';
+            let lb = JSON.parse(localStorage.getItem(key) || '[]');
+            lb.push({ class: player.class, no: player.no, score: score, time: elapsed });
+            lb.sort((a,b) => b.score - a.score || a.time - b.time);
+            lb = lb.slice(0, 20);
+            localStorage.setItem(key, JSON.stringify(lb));
+            showScreen('end-screen');
+        }
+
+        function goHome() { showScreen('home-screen'); }
+
+        function showLeaderboard() {
+            const key = 'algebra_birds_lb';
+            let lb = JSON.parse(localStorage.getItem(key) || '[]');
+            const tbody = document.querySelector('#leaderboard-table tbody');
+            tbody.innerHTML = '';
+            lb.forEach((item, i) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${i+1}</td><td>${item.class}</td><td>${item.no}</td><td>${item.score}</td><td>${item.time}秒</td>`;
+                tbody.appendChild(tr);
+            });
+            document.getElementById('leaderboard-card').style.display = 'block';
+        }
+
+        function showLeaderboardFromEnd() {
+            showScreen('home-screen');
+            showLeaderboard();
+        }
+
+        showScreen('home-screen');
+    </script>
 </body>
 </html>
