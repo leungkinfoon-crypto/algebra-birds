@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <title>第15課 代數小鳥 - 完整版</title>
+    <title>第15課 代數小鳥 - 聯機排行榜版</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -17,95 +17,29 @@
         .container { max-width: 1100px; margin: 0 auto; padding: 20px; }
         header { text-align: center; color: #2c3e50; margin-bottom: 20px; }
         header h1 { font-size: 2.2em; }
-        .card {
-            background: white;
-            border-radius: 16px;
-            padding: 25px;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.12);
-            margin-bottom: 20px;
-        }
+        .card { background: white; border-radius: 16px; padding: 25px; box-shadow: 0 6px 20px rgba(0,0,0,0.12); margin-bottom: 20px; }
         .form-group { margin: 15px 0; text-align: center; }
         label { font-weight: bold; display: block; margin-bottom: 8px; font-size: 1.1em; }
-        select, input {
-            padding: 12px 18px;
-            font-size: 1.1em;
-            border: 2px solid #3498db;
-            border-radius: 10px;
-            width: 200px;
-            max-width: 90%;
-        }
-        button {
-            background: #e74c3c;
-            color: white;
-            border: none;
-            padding: 14px 32px;
-            font-size: 1.15em;
-            border-radius: 30px;
-            cursor: pointer;
-            font-weight: bold;
-            margin: 8px;
-            transition: background 0.2s;
-        }
-        button:hover { background: #c0392b; }
+        select, input { padding: 12px 18px; font-size: 1.1em; border: 2px solid #3498db; border-radius: 10px; width: 200px; max-width: 90%; }
+        button { background: #e74c3c; color: white; border: none; padding: 14px 32px; font-size: 1.15em; border-radius: 30px; cursor: pointer; font-weight: bold; margin: 8px; }
         button.secondary { background: #3498db; }
-        button.secondary:hover { background: #2980b9; }
         .leaderboard { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .leaderboard th, .leaderboard td { padding: 10px; text-align: center; border-bottom: 1px solid #eee; }
         .leaderboard th { background: #f8f9fa; }
-        .info-bar {
-            display: flex;
-            justify-content: space-between;
-            background: rgba(255,255,255,0.95);
-            padding: 12px 20px;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            font-weight: bold;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
-        .question-box {
-            background: white;
-            border: 3px solid #e74c3c;
-            border-radius: 15px;
-            padding: 16px;
-            font-size: 1.25em;
-            text-align: center;
-            margin-bottom: 12px;
-            min-height: 65px;
-        }
-        #game-canvas {
-            display: block;
-            margin: 0 auto;
-            background: linear-gradient(#87CEEB, #98FB98);
-            border: 4px solid #27ae60;
-            border-radius: 15px;
-            cursor: crosshair;
-            max-width: 100%;
-            height: auto;
-            touch-action: none;
-        }
-        @media (max-width: 768px) {
-            .container { padding: 10px; }
-            header h1 { font-size: 1.6em; }
-            .question-box { font-size: 1.05em; padding: 12px; }
-            .info-bar { font-size: 0.9em; padding: 8px 12px; }
-            button { padding: 12px 20px; font-size: 1em; }
-        }
+        .info-bar { display: flex; justify-content: space-between; background: rgba(255,255,255,0.95); padding: 12px 20px; border-radius: 12px; margin-bottom: 12px; font-weight: bold; flex-wrap: wrap; gap: 10px; }
+        .question-box { background: white; border: 3px solid #e74c3c; border-radius: 15px; padding: 16px; font-size: 1.25em; text-align: center; margin-bottom: 12px; min-height: 65px; }
+        #game-canvas { display: block; margin: 0 auto; border: 4px solid #27ae60; border-radius: 15px; max-width: 100%; touch-action: none; }
         .feedback { text-align: center; font-size: 1.3em; font-weight: bold; min-height: 36px; margin: 8px 0; }
         .feedback.success { color: #27ae60; }
         .feedback.error { color: #e74c3c; }
-        .analysis { text-align: left; background: #f8f9fa; padding: 20px; border-radius: 12px; margin: 15px 0; }
-        .example { background: white; padding: 12px; margin: 8px 0; border-left: 4px solid #3498db; border-radius: 6px; }
-        .stars { font-size: 3em; text-align: center; }
     </style>
 </head>
 <body>
-    <!-- 首頁 -->
     <div id="home-screen" class="screen active">
         <div class="container">
             <header>
                 <h1>🐦 代數小鳥</h1>
-                <p>第15課　文字敘述轉代數式</p>
+                <p>第15課　文字敘述轉代數式（聯機排行榜）</p>
             </header>
             <div class="card">
                 <div class="form-group">
@@ -120,11 +54,12 @@
                 </div>
                 <div style="text-align:center;">
                     <button onclick="startGame()">開始遊戲</button>
-                    <button class="secondary" onclick="showLeaderboard()">查看排行榜</button>
+                    <button class="secondary" onclick="showLeaderboard()">查看聯機排行榜</button>
                 </div>
             </div>
             <div class="card" id="leaderboard-card" style="display:none;">
-                <h2 style="text-align:center;">🏆 排行榜</h2>
+                <h2 style="text-align:center;">🏆 聯機排行榜</h2>
+                <p style="text-align:center; color:#888; font-size:0.9em;">所有學生分數會同步顯示</p>
                 <table class="leaderboard" id="leaderboard-table">
                     <thead><tr><th>名次</th><th>班別</th><th>學號</th><th>得分</th><th>用時</th></tr></thead>
                     <tbody></tbody>
@@ -133,7 +68,6 @@
         </div>
     </div>
 
-    <!-- 遊戲畫面 -->
     <div id="game-screen" class="screen">
         <div class="container">
             <div class="info-bar">
@@ -152,7 +86,6 @@
         </div>
     </div>
 
-    <!-- 結果畫面 -->
     <div id="end-screen" class="screen">
         <div class="container">
             <div class="card">
@@ -160,7 +93,6 @@
                 <p style="text-align:center; font-size:1.3em; margin:10px 0;">
                     最終得分：<strong id="final-score">0</strong>　|　用時：<strong id="final-time">0</strong>秒
                 </p>
-                <div class="analysis" id="analysis"></div>
                 <div style="text-align:center;">
                     <button onclick="goHome()">返回首頁</button>
                     <button class="secondary" onclick="showLeaderboardFromEnd()">查看排行榜</button>
@@ -170,7 +102,10 @@
     </div>
 
     <script>
-        // 40 題題庫（每次隨機抽 8 題）
+        // ===== Google Sheet 聯機排行榜設定 =====
+        // 請把下面的 SCRIPT_URL 替換成你部署的 Apps Script 網址
+        const SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
+
         const allQuestions = [
             { text: "媽媽買蘋果 y 個，買橙的數量是蘋果的 4 倍。媽媽買橙 ______ 個。", options: ["4y", "y+4", "y/4", "4+y"], correct: 0, concept: "乘法（倍）" },
             { text: "媽媽有梨 20 個，平均分成 n 份，每份有梨 ______ 個。", options: ["20/n", "n/20", "20n", "20-n"], correct: 0, concept: "除法（平均分）" },
@@ -190,7 +125,6 @@
         let startTime = 0;
         let timerInterval = null;
         let elapsed = 0;
-        let mistakes = [];
         let isDragging = false;
         let currentMouse = {x:0, y:0};
         let projectile = null;
@@ -217,7 +151,6 @@
 
             currentLevel = 0;
             score = 0;
-            mistakes = [];
             document.getElementById('score').textContent = 0;
             startTime = Date.now();
             elapsed = 0;
@@ -275,10 +208,7 @@
                 clientX = e.clientX;
                 clientY = e.clientY;
             }
-            return {
-                x: (clientX - rect.left) * scaleX,
-                y: (clientY - rect.top) * scaleY
-            };
+            return { x: (clientX - rect.left) * scaleX, y: (clientY - rect.top) * scaleY };
         }
 
         canvas.addEventListener('mousedown', e => {
@@ -348,9 +278,6 @@
                             birdsLeft--;
                             document.getElementById('birds-left').textContent = birdsLeft;
                             showFeedback('射中錯誤的代數式！扣一命', false);
-                            if (!mistakes.includes(levels[currentLevel].concept)) {
-                                mistakes.push(levels[currentLevel].concept);
-                            }
                             if (birdsLeft <= 0) {
                                 showFeedback('生命用完！下一關', false);
                                 setTimeout(nextLevel, 1200);
@@ -408,12 +335,6 @@
             ctx.fillRect(0, 0, canvas.width, 340);
             ctx.fillStyle = '#7CFC00';
             ctx.fillRect(0, 340, canvas.width, 60);
-            ctx.fillStyle = '#32CD32';
-            for (let i = 0; i < canvas.width; i += 20) {
-                ctx.beginPath();
-                ctx.arc(i, 350, 8, 0, Math.PI, true);
-                ctx.fill();
-            }
             ctx.strokeStyle = '#8B4513';
             ctx.lineWidth = 10;
             ctx.lineCap = 'round';
@@ -432,9 +353,7 @@
                 ctx.stroke();
                 drawBird(currentMouse.x, currentMouse.y, 18);
             }
-            if (projectile && projectile.active) {
-                drawBird(projectile.x, projectile.y, 18);
-            }
+            if (projectile && projectile.active) drawBird(projectile.x, projectile.y, 18);
             pigs.forEach(pig => {
                 const cx = pig.x + pig.w / 2;
                 const cy = pig.y + pig.h / 2;
@@ -532,30 +451,65 @@
             initLevel();
         }
 
-        function finishGame() {
+        async function finishGame() {
             if (timerInterval) clearInterval(timerInterval);
             document.getElementById('final-score').textContent = score;
             document.getElementById('final-time').textContent = elapsed;
-            // 簡單排行榜儲存
+
+            // 上傳到 Google Sheet 聯機排行榜
+            if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
+                try {
+                    await fetch(SCRIPT_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            class: player.class,
+                            no: player.no,
+                            score: score,
+                            time: elapsed
+                        })
+                    });
+                } catch (e) {
+                    console.log('Upload failed, saved locally');
+                }
+            }
+
+            // 同時儲存本地作為備份
             const key = 'algebra_birds_lb';
             let lb = JSON.parse(localStorage.getItem(key) || '[]');
             lb.push({ class: player.class, no: player.no, score: score, time: elapsed });
             lb.sort((a,b) => b.score - a.score || a.time - b.time);
-            lb = lb.slice(0, 20);
-            localStorage.setItem(key, JSON.stringify(lb));
+            localStorage.setItem(key, JSON.stringify(lb.slice(0, 30)));
+
             showScreen('end-screen');
         }
 
         function goHome() { showScreen('home-screen'); }
 
-        function showLeaderboard() {
-            const key = 'algebra_birds_lb';
-            let lb = JSON.parse(localStorage.getItem(key) || '[]');
+        async function showLeaderboard() {
             const tbody = document.querySelector('#leaderboard-table tbody');
+            tbody.innerHTML = '<tr><td colspan="5">載入中...</td></tr>';
+
+            let rows = [];
+            // 優先從 Google Sheet 讀取
+            if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
+                try {
+                    const res = await fetch(SCRIPT_URL);
+                    rows = await res.json();
+                } catch (e) {
+                    console.log('Online load failed');
+                }
+            }
+            // 如果無聯機資料，用本地
+            if (rows.length === 0) {
+                rows = JSON.parse(localStorage.getItem('algebra_birds_lb') || '[]');
+            }
+
             tbody.innerHTML = '';
-            lb.forEach((item, i) => {
+            rows.slice(0, 20).forEach((item, i) => {
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${i+1}</td><td>${item.class}</td><td>${item.no}</td><td>${item.score}</td><td>${item.time}秒</td>`;
+                tr.innerHTML = `<td>${i+1}</td><td>${item.班別 || item.class || ''}</td><td>${item.學號 || item.no || ''}</td><td>${item.分數 || item.score || 0}</td><td>${item.用時 || item.time || 0}秒</td>`;
                 tbody.appendChild(tr);
             });
             document.getElementById('leaderboard-card').style.display = 'block';
