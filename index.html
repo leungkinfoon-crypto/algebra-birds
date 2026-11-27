@@ -103,8 +103,7 @@
 
     <script>
         // ===== Google Sheet 聯機排行榜設定 =====
-        // 請把下面的 SCRIPT_URL 替換成你部署的 Apps Script 網址
-        const SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwZH6oZqXQcZA0pi7zVEGkakLgRei6X0Us3ZqYcxCVhv9G5-TY2K7PKjxxvQ4KjWb-z/exec';
 
         const allQuestions = [
             { text: "媽媽買蘋果 y 個，買橙的數量是蘋果的 4 倍。媽媽買橙 ______ 個。", options: ["4y", "y+4", "y/4", "4+y"], correct: 0, concept: "乘法（倍）" },
@@ -457,30 +456,21 @@
             document.getElementById('final-time').textContent = elapsed;
 
             // 上傳到 Google Sheet 聯機排行榜
-            if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
-                try {
-                    await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            class: player.class,
-                            no: player.no,
-                            score: score,
-                            time: elapsed
-                        })
-                    });
-                } catch (e) {
-                    console.log('Upload failed, saved locally');
-                }
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        class: player.class,
+                        no: player.no,
+                        score: score,
+                        time: elapsed
+                    })
+                });
+            } catch (e) {
+                console.log('Upload failed');
             }
-
-            // 同時儲存本地作為備份
-            const key = 'algebra_birds_lb';
-            let lb = JSON.parse(localStorage.getItem(key) || '[]');
-            lb.push({ class: player.class, no: player.no, score: score, time: elapsed });
-            lb.sort((a,b) => b.score - a.score || a.time - b.time);
-            localStorage.setItem(key, JSON.stringify(lb.slice(0, 30)));
 
             showScreen('end-screen');
         }
@@ -492,26 +482,23 @@
             tbody.innerHTML = '<tr><td colspan="5">載入中...</td></tr>';
 
             let rows = [];
-            // 優先從 Google Sheet 讀取
-            if (SCRIPT_URL && SCRIPT_URL !== 'YOUR_APPS_SCRIPT_URL_HERE') {
-                try {
-                    const res = await fetch(SCRIPT_URL);
-                    rows = await res.json();
-                } catch (e) {
-                    console.log('Online load failed');
-                }
-            }
-            // 如果無聯機資料，用本地
-            if (rows.length === 0) {
-                rows = JSON.parse(localStorage.getItem('algebra_birds_lb') || '[]');
+            try {
+                const res = await fetch(SCRIPT_URL);
+                rows = await res.json();
+            } catch (e) {
+                console.log('Load failed');
             }
 
             tbody.innerHTML = '';
-            rows.slice(0, 20).forEach((item, i) => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `<td>${i+1}</td><td>${item.班別 || item.class || ''}</td><td>${item.學號 || item.no || ''}</td><td>${item.分數 || item.score || 0}</td><td>${item.用時 || item.time || 0}秒</td>`;
-                tbody.appendChild(tr);
-            });
+            if (rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">暫時未有資料</td></tr>';
+            } else {
+                rows.slice(0, 20).forEach((item, i) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `<td>${i+1}</td><td>${item.班別 || item.class || ''}</td><td>${item.學號 || item.no || ''}</td><td>${item.分數 || item.score || 0}</td><td>${item.用時 || item.time || 0}秒</td>`;
+                    tbody.appendChild(tr);
+                });
+            }
             document.getElementById('leaderboard-card').style.display = 'block';
         }
 
