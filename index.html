@@ -102,7 +102,6 @@
     </div>
 
     <script>
-        // ===== Google Sheet 聯機排行榜設定 =====
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwZH6oZqXQcZA0pi7zVEGkakLgRei6X0Us3ZqYcxCVhv9G5-TY2K7PKjxxvQ4KjWb-z/exec';
 
         const allQuestions = [
@@ -129,6 +128,7 @@
         let projectile = null;
         let pigs = [];
         let particles = [];
+        let scoreSubmitted = false;
         const slingshotPos = {x: 120, y: 300};
 
         const canvas = document.getElementById('game-canvas');
@@ -150,6 +150,7 @@
 
             currentLevel = 0;
             score = 0;
+            scoreSubmitted = false;
             document.getElementById('score').textContent = 0;
             startTime = Date.now();
             elapsed = 0;
@@ -451,11 +452,13 @@
         }
 
         async function finishGame() {
+            if (scoreSubmitted) return;
+            scoreSubmitted = true;
+
             if (timerInterval) clearInterval(timerInterval);
             document.getElementById('final-score').textContent = score;
             document.getElementById('final-time').textContent = elapsed;
 
-            // 上傳到 Google Sheet
             try {
                 const params = new URLSearchParams({
                     class: player.class,
