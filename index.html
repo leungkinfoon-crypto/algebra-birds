@@ -455,22 +455,16 @@
             document.getElementById('final-score').textContent = score;
             document.getElementById('final-time').textContent = elapsed;
 
-            // 上傳到 Google Sheet 聯機排行榜
+            // 上傳到 Google Sheet
             try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        class: player.class,
-                        no: player.no,
-                        score: score,
-                        time: elapsed
-                    })
+                const params = new URLSearchParams({
+                    class: player.class,
+                    no: player.no,
+                    score: score,
+                    time: elapsed
                 });
-            } catch (e) {
-                console.log('Upload failed');
-            }
+                await fetch(SCRIPT_URL + '?' + params.toString(), { method: 'GET', mode: 'no-cors' });
+            } catch (e) {}
 
             showScreen('end-screen');
         }
@@ -490,12 +484,16 @@
             }
 
             tbody.innerHTML = '';
-            if (rows.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5">暫時未有資料</td></tr>';
+            if (!rows || rows.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">暫時未有資料，請先玩一局</td></tr>';
             } else {
                 rows.slice(0, 20).forEach((item, i) => {
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `<td>${i+1}</td><td>${item.班別 || item.class || ''}</td><td>${item.學號 || item.no || ''}</td><td>${item.分數 || item.score || 0}</td><td>${item.用時 || item.time || 0}秒</td>`;
+                    const cls = item.班別 || item.class || '';
+                    const no = item.學號 || item.no || '';
+                    const sc = item.分數 || item.score || 0;
+                    const tm = item.用時 || item.time || 0;
+                    tr.innerHTML = `<td>${i+1}</td><td>${cls}</td><td>${no}</td><td>${sc}</td><td>${tm}秒</td>`;
                     tbody.appendChild(tr);
                 });
             }
